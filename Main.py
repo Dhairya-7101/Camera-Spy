@@ -1,5 +1,9 @@
 print("Use this command after ssh -R 80:localhost:8080 nokey@localhost.run  to make it public ")
 
+def is_logged():
+    return session.get("login")
+    
+
 # =========================
 # PRO CAMERA CONTROL SYSTEM
 # =========================
@@ -136,11 +140,15 @@ def frame():
 
 @app.route("/capture")
 def capture():
+    if not is_logged():
+        return redirect("/")
+
     if latest_frame:
         filename = f"captures/img_{int(time.time())}.jpg"
         with open(filename, "wb") as f:
             f.write(latest_frame)
         logs.append(f"Captured {filename}")
+
     return redirect("/dashboard")
 
 # =========================
@@ -149,6 +157,9 @@ def capture():
 
 @app.route("/gallery")
 def gallery():
+    if not is_logged():
+        return redirect("/")
+
     files = os.listdir("captures")
     html = "<h2>🖼️ Gallery</h2>"
 
@@ -157,10 +168,6 @@ def gallery():
 
     html += '<br><a href="/dashboard">Back</a>'
     return html
-
-@app.route("/img/<name>")
-def img(name):
-    return open(f"captures/{name}", "rb").read()
 
 # =========================
 # LOGS
